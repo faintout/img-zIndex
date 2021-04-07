@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <span onclick="moveImgIndex(true)" id="moveTop" class="btn">移至上层</span>
+    <span onclick="moveImgIndex(false)" id="moveBottom" class="btn">移至下层</span>
+    <div style="position: relative;width: 90%;height: 600px;border: 1px solid lightslategray">
+        <img class="img" id="img-1" src="./images/1.jpg" alt="" style="z-index: 1;">
+        <img class="img" id="img-2" src="./images/2.jpg" alt="" style="z-index: 2;">
+        <img class="img" id="img-3" src="./images/3.jpg" alt="" style="z-index: 3;">
+    </div>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+    <script>
+        //获取元素 设置样式
+        var selectDom = null
+        $('.img').click(function(e) {
+            // console.log($('img'));
+            Array.from($('img')).forEach(imgs => {
+                $('#' + imgs.id).css({ 'box-shadow': 'none' })
+            })
+            selectDom = e.currentTarget.id
+            $('#' + e.currentTarget.id).css({ 'box-shadow': '0 0 10px 2px red' })
+        })
+    </script>
+    <script>
+        //移动方法（提取为公共方法）
+        /**
+         * @ isTop true 为移至上层 、false为移至下层
+         * @Date 2021-04-06 16:16:12
+         */
+        function moveImgIndex(isTop) {
+            if (!selectDom) {
+                alert('请选择要设置的图层!')
+                return
+            }
+            //组装对象
+            let imgsArr = []
+            Array.from($('img')).map(imgs => {
+                let tempObj = {}
+                tempObj.id = imgs.id
+                tempObj.zIndex = $("#" + imgs.id).css('z-index')
+                imgsArr.push(tempObj)
+            })
+            //排序
+            imgsArr.sort((a, b) => {
+                return a.zIndex - b.zIndex
+            })
+            // let imgsArrTemp  =[...imgsArr]
+            //找到选中图片的索引
+            let selectIndex = imgsArr.findIndex(imgs => imgs.id == selectDom)
+            //找得到当前图片index位置
+            if (selectIndex > -1) {
+                //判断当前选中的图层上移下移时是否在数组的边缘
+                //上移判断是否为数组长度-1，就相当于判断当前选中的是否为数组的末尾，也可以翻转数组判断是否为第一个。
+                //下移判断选中索引是否为第一个
+                if (isTop ? imgsArr.length - 1 == selectIndex : selectIndex == 0) {
+                    alert(`当前图层已经在最${isTop?'上':'下'}层。请重新设置`)
+                    return
+                }
+                //说下下边这段代码原理
+                //使用当前选中的图层，判断是上移还是下移。
+                //上移的话就找当前选中图层的索引+1 的图层，取他的z-index值，和选中图层的索引值，把两个z-inde值调换位置即可。下移反之-1
+
+                //originIndexValue 是选中层级的z-index值
+                //newIndexValue 是目标的z-index的值
+                //互换位置
+
+                let originIndexValue = imgsArr[selectIndex].zIndex
+                let newIndexValue = imgsArr[isTop ? selectIndex + 1 : selectIndex - 1].zIndex
+                $("#" + selectDom).css({ 'z-index': newIndexValue })
+                $('#' + imgsArr[isTop ? selectIndex + 1 : selectIndex - 1].id).css({ 'z-index': originIndexValue })
+
+            }
+        }
+    </script>
+</body>
+<style>
+    img {
+        position: absolute;
+    }
+</style>
+
+</html>
