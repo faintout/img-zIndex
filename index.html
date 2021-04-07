@@ -9,8 +9,10 @@
 </head>
 
 <body>
-    <span onclick="moveImgIndex(true)" id="moveTop" class="btn">移至上层</span>
-    <span onclick="moveImgIndex(false)" id="moveBottom" class="btn">移至下层</span>
+    <span onclick="moveImgIndex(0)" id="moveTop" class="btn">移至上层</span>
+    <span onclick="moveImgIndex(1)" id="moveBottom" class="btn">移至下层</span>
+    <span onclick="moveImgIndex(2)" id="moveTop" class="btn">置顶</span>
+    <span onclick="moveImgIndex(3)" id="moveBottom" class="btn">置底</span>
     <div style="position: relative;width: 90%;height: 600px;border: 1px solid lightslategray">
         <img class="img" id="img-1" src="./images/1.jpg" alt="" style="z-index: 1;">
         <img class="img" id="img-2" src="./images/2.jpg" alt="" style="z-index: 2;">
@@ -32,10 +34,10 @@
     <script>
         //移动方法（提取为公共方法）
         /**
-         * @ isTop true 为移至上层 、false为移至下层
+         * @moveType 0 为移至上层 、1为移至下层 、2置顶、3置底
          * @Date 2021-04-06 16:16:12
          */
-        function moveImgIndex(isTop) {
+        function moveImgIndex(moveType) {
             if (!selectDom) {
                 alert('请选择要设置的图层!')
                 return
@@ -60,8 +62,8 @@
                 //判断当前选中的图层上移下移时是否在数组的边缘
                 //上移判断是否为数组长度-1，就相当于判断当前选中的是否为数组的末尾，也可以翻转数组判断是否为第一个。
                 //下移判断选中索引是否为第一个
-                if (isTop ? imgsArr.length - 1 == selectIndex : selectIndex == 0) {
-                    alert(`当前图层已经在最${isTop?'上':'下'}层。请重新设置`)
+                if ((moveType == 0 || moveType == 2) ? imgsArr.length - 1 == selectIndex : selectIndex == 0) {
+                    alert(`当前图层已经在最${(moveType==0||moveType==2)?'上':'下'}层。请重新设置`)
                     return
                 }
                 //说下下边这段代码原理
@@ -71,11 +73,16 @@
                 //originIndexValue 是选中层级的z-index值
                 //newIndexValue 是目标的z-index的值
                 //互换位置
+                if ((moveType == 0 || moveType == 1)) {
+                    let originIndexValue = imgsArr[selectIndex].zIndex
+                    let newIndexValue = imgsArr[moveType==0 ? selectIndex + 1 : selectIndex - 1].zIndex
+                    $("#" + selectDom).css({ 'z-index': newIndexValue })
+                    $('#' + imgsArr[moveType==0 ? selectIndex + 1 : selectIndex - 1].id).css({ 'z-index': originIndexValue })
+                }else{
+                    let targetZIndex = (moveType == 2?parseInt(imgsArr[imgsArr.length-1].zIndex)+1:parseInt(imgsArr[0].zIndex)-1)
+                    $("#" + selectDom).css({ 'z-index': targetZIndex })     
+                }
 
-                let originIndexValue = imgsArr[selectIndex].zIndex
-                let newIndexValue = imgsArr[isTop ? selectIndex + 1 : selectIndex - 1].zIndex
-                $("#" + selectDom).css({ 'z-index': newIndexValue })
-                $('#' + imgsArr[isTop ? selectIndex + 1 : selectIndex - 1].id).css({ 'z-index': originIndexValue })
 
             }
         }
